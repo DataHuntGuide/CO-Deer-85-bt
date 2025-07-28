@@ -1,0 +1,106 @@
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Colorado Heatmap - Set 21</title>
+
+  <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
+  <style>
+    #map {
+      height: 100vh;
+      width: 100%;
+    }
+    .leaflet-control-layers {
+      background: white;
+      padding: 6px;
+      border-radius: 4px;
+    }
+  </style>
+</head>
+<body>
+  <div id="map"></div>
+
+  <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+  <script src="https://unpkg.com/leaflet.heat/dist/leaflet-heat.js"></script>
+  <script src="https://unpkg.com/leaflet-providers/leaflet-providers.js"></script>
+
+  <script>
+const coords = [
+  [37.28711, -105.12848],
+  [37.36399, -105.09729],
+  [37.25235, -104.62271],
+  [37.27569, -104.63454],
+  [37.25216, -104.63538],
+  [37.24438, -104.61793],
+  [37.16776, -104.67817],
+  [37.16639, -104.67104],
+  [37.38487, -104.62762],
+  [37.39938, -104.70614],
+  [37.2557, -104.53665],
+  [37.58382, -105.13104],
+  [37.2262, -104.59274],
+  [37.23724, -104.59548],
+  [37.348, -105.05941],
+  [37.22536, -104.59925],
+  [37.24831, -104.58844],
+  [37.35173, -104.6547],
+  [37.23844, -104.60682],
+  [37.22889, -104.59699],
+  [37.23722, -104.60664],
+  [37.20083, -104.61943],
+  [37.22889, -104.59699]
+];
+
+const map = L.map('map').setView([37.27847, -104.70452], 11);
+
+const topo = L.tileLayer(
+  'https://server.arcgisonline.com/ArcGIS/rest/services/World_Topo_Map/MapServer/tile/{z}/{y}/{x}',
+  { attribution: 'Tiles &copy; Esri' }
+).addTo(map);
+
+const trails = L.tileLayer.provider('OpenTopoMap');
+const boundaries = L.tileLayer.provider('OpenStreetMap.HOT');
+
+const heatData = coords.map(c => [c[0], c[1], 8]);
+const heat = L.heatLayer(heatData, {
+  radius: 70,
+  blur: 40,
+  maxZoom: 17,
+  max: 3.0,
+  minOpacity: 0.5,
+  gradient: {
+    0.0: 'purple',
+    0.2: 'blue',
+    0.4: 'cyan',
+    0.6: 'lime',
+    0.8: 'yellow',
+    1.0: 'red'
+  }
+}).addTo(map);
+
+const gpsMarkers = L.layerGroup();
+coords.forEach(([lat, lng]) => {
+  L.circleMarker([lat, lng], {
+    radius: 5,
+    color: 'black',
+    fillColor: 'white',
+    fillOpacity: 0.8
+  })
+  .bindPopup(`${lat.toFixed(5)}, ${lng.toFixed(5)}`)
+  .addTo(gpsMarkers);
+});
+gpsMarkers.addTo(map);
+
+const overlays = {
+  "GPS Markers": gpsMarkers,
+  "Heatmap": heat,
+  "Boundaries": boundaries,
+  "Trails": trails
+};
+
+L.control.layers(null, overlays, { collapsed: false }).addTo(map);
+  </script>
+</body>
+</html>
